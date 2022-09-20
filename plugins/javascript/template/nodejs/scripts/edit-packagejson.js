@@ -16,10 +16,10 @@ function exec(fs, project, spinner, pathPlugin) {
 
     const pluginPackageJson = (pluginName) => {
         spinner.text = `Reading ${pluginName} package.json and merging it with the project package.json.`;
+        const file = `${pathPlugin}/template/${framework}/plugins/${pluginName}/_package.json`;
+        if (!fs.existsSync(file)) return;
 
-        const packageJsonLinter = fs.readJsonSync(
-            `${pathPlugin}/template/${framework}/plugins/${pluginName}/_package.json`
-        );
+        const packageJsonLinter = fs.readJsonSync(file);
         objAssign(packageJsonLinter, packageJson);
 
         spinner.succeed(

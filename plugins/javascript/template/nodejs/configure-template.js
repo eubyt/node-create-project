@@ -3,7 +3,8 @@ export default [
         type: "multiselect",
         name: "linters",
         message: {
-            "pt-BR": "Selecione as ferramentas de Linting (Opcional)",
+            "pt-BR":
+                "Selecione as ferramentas de Linting ou CodeStyle (Opcional)",
             "en-US": "Select the Linting tools (Optional)",
         },
         hint: {
@@ -18,6 +19,10 @@ export default [
             {
                 message: "Prettier",
                 value: "prettier",
+            },
+            {
+                message: "EditorConfig",
+                value: "editorconfig",
             },
         ],
         requiredQuestion: [
