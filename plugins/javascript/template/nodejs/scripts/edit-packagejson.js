@@ -1,12 +1,11 @@
 import { objAssign } from "../../../../../util/object.js";
 
-function exec(fs, project, spinner) {
+function exec(fs, project, spinner, pathPlugin) {
     const {
         projectName,
         projectDesc,
         projectVersion,
         linters,
-        language,
         framework,
         eslint,
         dependencies,
@@ -19,7 +18,7 @@ function exec(fs, project, spinner) {
         spinner.text = `Reading ${pluginName} package.json and merging it with the project package.json.`;
 
         const packageJsonLinter = fs.readJsonSync(
-            `./plugins/${language}/template/${framework}/plugins/${pluginName}/_package.json`
+            `${pathPlugin}/template/${framework}/plugins/${pluginName}/_package.json`
         );
         objAssign(packageJsonLinter, packageJson);
 

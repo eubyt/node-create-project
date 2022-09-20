@@ -1,13 +1,13 @@
 function exec(fs, project) {
     const { projectName, dependencies } = project;
     let contentsFile = {
-        "index.js": {
+        "server.js": {
             functions: [],
         },
     };
 
     if (!dependencies.includes("dotenv")) {
-        contentsFile["index.js"].functions.push(
+        contentsFile["server.js"].functions.push(
             "",
             "app.listen(3000, () => {",
             "    console.log('Example app listening on port 3000');",
@@ -16,7 +16,7 @@ function exec(fs, project) {
         return;
     }
 
-    contentsFile["index.js"].functions.push(
+    contentsFile["server.js"].functions.push(
         "",
         "app.listen(process.env.PORT, () => {",
         "    console.log(`Example app listening on port ${process.env.PORT}!`);",

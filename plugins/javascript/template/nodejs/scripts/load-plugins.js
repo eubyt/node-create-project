@@ -1,11 +1,21 @@
 import handlebars from "handlebars";
 import { objAssign } from "../../../../../util/object.js";
 
-async function exec(fs, project, spinner) {
+async function exec(fs, project, spinner, pathPlugin) {
     const { projectName, linters, language, framework, eslint, dependencies } =
         Object.assign({}, project);
 
-    let contentsFile = {};
+    let contentsFile = {
+        "index.js": {
+            import: [],
+            var: [],
+            functions: [
+                "function helloWorld() {",
+                "    console.log('Hello World!');",
+                "}",
+            ],
+        },
+    };
 
     let scriptsPlugin = [];
     let configsPlugin = [];
@@ -14,41 +24,33 @@ async function exec(fs, project, spinner) {
     const pluginsMerge = (pluginName) => {
         try {
             spinner.text = `Reading ${pluginName} copy files and merging it with the project files.`;
-            fs.copySync(
-                `./plugins/${language}/template/${framework}/plugins/${pluginName}`,
-                projectName,
-                {
-                    overwrite: false,
-                    filter: (src, dest) => {
-                        spinner.text = `Copying ${src} to ${dest}.`;
-                        const filename = src.split("/").pop();
-                        // Run Scripts
-                        if (
-                            src.includes("scripts") &&
-                            filename.includes(".js")
-                        ) {
-                            scriptsPlugin.push(
-                                `../plugins/${pluginName}/scripts/${filename}`
-                            );
-                            return false;
-                        }
+            const pathPluginMerge = `${pathPlugin}/template/${framework}/plugins/${pluginName}`;
+            fs.copySync(pathPluginMerge, projectName, {
+                overwrite: false,
+                filter: (src, dest) => {
+                    spinner.text = `Copying ${src} to ${dest}.`;
+                    const filename = src.split("/").pop();
+                    // Run Scripts
+                    if (src.includes("scripts") && filename.includes(".js")) {
+                        scriptsPlugin.push(
+                            `${pathPluginMerge}/scripts/${filename}`
+                        );
+                        return false;
+                    }
 
-                        // Run Configs
-                        if (filename === "__config__.js") {
-                            configsPlugin.push(
-                                `../plugins/${pluginName}/${filename}`
-                            );
-                            return false;
-                        }
+                    // Run Configs
+                    if (filename === "__config__.js") {
+                        configsPlugin.push(`${pathPluginMerge}/${filename}`);
+                        return false;
+                    }
 
-                        // No need to copy package.json
-                        if (filename === "_package.json") {
-                            return false;
-                        }
-                        return true;
-                    },
-                }
-            );
+                    // No need to copy package.json
+                    if (filename === "_package.json") {
+                        return false;
+                    }
+                    return true;
+                },
+            });
         } catch (error) {
             spinner.fail(
                 `${prefixSpinnerText} Error reading ${pluginName} copy files and merging it with the project files.`
@@ -88,39 +90,41 @@ async function exec(fs, project, spinner) {
     if (scriptsPlugin.length > 0) {
         spinner.text = `Running scripts plugins.`;
         await Promise.all(
-            scriptsPlugin.map((file) =>
-                import(file).then((module) => {
-                    spinner.text = `Running ${file} script.`;
-                    const result = module.default(fs, {
-                        ...project,
-                        contentsFile,
-                    });
+            scriptsPlugin.map(
+                async (file) =>
+                    await import(file).then((module) => {
+                        spinner.text = `Running ${file} script.`;
+                        const result = module.default(fs, {
+                            ...project,
+                            contentsFile,
+                        });
 
-                    if (result && result.contentsFile) {
-                        objAssign(result.contentsFile, contentsFile);
-                    }
+                        if (result && result.contentsFile) {
+                            objAssign(result.contentsFile, contentsFile);
+                        }
 
-                    spinner.succeed(
-                        `${prefixSpinnerText} Run ${file} script successfully!`
-                    );
-                })
+                        spinner.succeed(
+                            `${prefixSpinnerText} Run ${file} script successfully!`
+                        );
+                    })
             )
         );
     }
 
     // Load Configs plugins
     await Promise.all(
-        configsPlugin.map((file) =>
-            import(file).then((module) => {
-                spinner.text = `Loading ${file} config.`;
-                const { variables } = module.default;
-                if (variables) {
-                    objAssign(variables, contentsFile);
-                }
-                spinner.succeed(
-                    `${prefixSpinnerText} Loaded ${file} config successfully!`
-                );
-            })
+        configsPlugin.map(
+            async (file) =>
+                await import(file).then((module) => {
+                    spinner.text = `Loading ${file} config.`;
+                    const { variables } = module.default;
+                    if (variables) {
+                        objAssign(variables, contentsFile);
+                    }
+                    spinner.succeed(
+                        `${prefixSpinnerText} Loaded ${file} config successfully!`
+                    );
+                })
         )
     );
 
@@ -153,6 +157,9 @@ async function exec(fs, project, spinner) {
             // Template variables
             spinner.text = `Template variables in ${fileName} file.`;
             const file = fs.readFileSync(fileName, "utf8");
+            if (!file) {
+                return;
+            }
             const templateIndexJs = handlebars.compile(file);
             let content = contentsFile[fileName.split("/").pop()];
             Object.keys(content).forEach((key) => {

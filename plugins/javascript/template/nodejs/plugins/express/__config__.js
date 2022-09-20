@@ -1,6 +1,6 @@
 export default {
     variables: {
-        "index.js": {
+        "server.js": {
             import: ["import express from 'express';"],
             var: ["const app = express();"],
             functions: [
