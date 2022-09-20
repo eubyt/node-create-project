@@ -125,27 +125,32 @@ async function exec(fs, project, spinner) {
         )
     );
 
+    // Rename all files with .ejs extension in the project
+    try {
+        spinner.text = `Renaming all files with .ejs extension in the project.`;
+        fs.readdirSync(projectName).forEach((file) => {
+            if (file.includes(".ejs")) {
+                const newFile = file.replace(".ejs", ".js");
+                fs.renameSync(
+                    `${projectName}/${file}`,
+                    `${projectName}/${newFile}`
+                );
+            }
+        });
+    } catch (error) {
+        spinner.fail(
+            `${prefixSpinnerText} Error renaming all files with .ejs extension in the project.`
+        );
+    } finally {
+        spinner.succeed(
+            `${prefixSpinnerText} Renamed all files with .ejs extension in the project successfully!`
+        );
+    }
+
     // Template files with handlebars
     Object.keys(contentsFile)
         .map((fileName) => `${projectName}/${fileName}`)
         .forEach(async (fileName) => {
-            // Remove .ejs extension from file name
-            try {
-                spinner.text = `Removing .ejs extension from ${fileName} file.`;
-                fs.renameSync(
-                    fileName.replace(".js", ".ejs"),
-                    fileName.replace(".ejs", ".js")
-                );
-            } catch (error) {
-                spinner.fail(
-                    `${prefixSpinnerText} Error removing .ejs extension from ${fileName} file.`
-                );
-            } finally {
-                spinner.succeed(
-                    `${prefixSpinnerText} Removed .ejs extension from ${fileName} file.`
-                );
-            }
-
             // Template variables
             spinner.text = `Template variables in ${fileName} file.`;
             const file = fs.readFileSync(fileName, "utf8");
