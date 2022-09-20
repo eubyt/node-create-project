@@ -1,0 +1,25 @@
+{
+  "name": "node-create-project",
+  "version": "1.0.0",
+  "type": "module",
+  "repository": "https://github.com/eubyt/node-create-project.git",
+  "author": "Eubyt <eubyt+github@proton.me>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node ./bin/init.js"
+  },
+  "bin": {
+    "ncp": "./bin/init.js"
+  },
+  "files": [
+    "bin",
+    "lib"
+  ],
+  "dependencies": {
+    "enquirer": "^2.3.6",
+    "fs-extra": "^10.1.0",
+    "handlebars": "^4.7.7",
+    "ora": "^6.1.2",
+    "semver": "^7.3.7"
+  }
+}

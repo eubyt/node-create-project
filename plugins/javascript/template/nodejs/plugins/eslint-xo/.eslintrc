@@ -1,0 +1,13 @@
+{
+  "env": {
+    "node": true
+  },
+  "extends": ["xo"],
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module"
+  },
+  "plugins": [],
+  "rules": {},
+  "settings": {}
+}

@@ -1,0 +1,20 @@
+{
+    "env": {
+        "node": true
+    },
+    "extends": ["eslint-config-standard"],
+    "overrides": [
+        {
+            "plugins": ["react"],
+            "extends": ["plugin:react/recommended"],
+            "files": ["*.jsx"]
+        }
+    ],
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [],
+    "rules": {},
+    "settings": {}
+}
