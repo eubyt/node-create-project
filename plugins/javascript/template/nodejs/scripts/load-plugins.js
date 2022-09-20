@@ -88,23 +88,22 @@ async function exec(fs, project, spinner) {
     if (scriptsPlugin.length > 0) {
         spinner.text = `Running scripts plugins.`;
         await Promise.all(
-            scriptsPlugin.map(
-                async (file) =>
-                    await import(file).then((module) => {
-                        spinner.text = `Running ${file} script.`;
-                        const result = module.default(fs, {
-                            ...project,
-                            contentsFile,
-                        });
+            scriptsPlugin.map((file) =>
+                import(file).then((module) => {
+                    spinner.text = `Running ${file} script.`;
+                    const result = module.default(fs, {
+                        ...project,
+                        contentsFile,
+                    });
 
-                        if (result && result.contentsFile) {
-                            objAssign(result.contentsFile, contentsFile);
-                        }
+                    if (result && result.contentsFile) {
+                        objAssign(result.contentsFile, contentsFile);
+                    }
 
-                        spinner.succeed(
-                            `${prefixSpinnerText} Run ${file} script successfully!`
-                        );
-                    })
+                    spinner.succeed(
+                        `${prefixSpinnerText} Run ${file} script successfully!`
+                    );
+                })
             )
         );
     }
