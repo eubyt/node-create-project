@@ -110,7 +110,7 @@ async function exec(fs, project, spinner) {
 
     // Load Configs plugins
     await Promise.all(
-        configsPlugin.map(async (file) =>
+        configsPlugin.map((file) =>
             import(file).then((module) => {
                 spinner.text = `Loading ${file} config.`;
                 const { variables } = module.default;
@@ -149,7 +149,7 @@ async function exec(fs, project, spinner) {
     // Template files with handlebars
     Object.keys(contentsFile)
         .map((fileName) => `${projectName}/${fileName}`)
-        .forEach(async (fileName) => {
+        .forEach((fileName) => {
             // Template variables
             spinner.text = `Template variables in ${fileName} file.`;
             const file = fs.readFileSync(fileName, "utf8");
