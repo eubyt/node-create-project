@@ -64,11 +64,9 @@ async function exec(fs, project, spinner, pathPlugin) {
 
     // Merge Linters files
     if (linters && linters.length > 0) {
-        linters
-            .map((value) =>
-                value.includes("eslint") ? `eslint-${eslint}` : value
-            )
-            .forEach(pluginsMerge);
+        [...linters, ...Array(eslint).map((x) => `eslint-${x}`)].forEach(
+            pluginsMerge
+        );
     }
 
     // Merge other dependencies files
