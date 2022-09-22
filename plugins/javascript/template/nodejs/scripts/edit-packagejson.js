@@ -5,9 +5,7 @@ function exec(fs, project, spinner, pathPlugin) {
         projectName,
         projectDesc,
         projectVersion,
-        linters,
         framework,
-        eslint,
         dependencies,
     } = project;
 
@@ -37,15 +35,6 @@ function exec(fs, project, spinner, pathPlugin) {
     spinner.succeed(
         `${prefixSpinnerText} Updated package.json for ${projectName} project.`
     );
-
-    // Check linters dependencies package.json
-    if (linters && linters.length > 0) {
-        linters
-            .map((value) =>
-                value.includes("eslint") ? `eslint-${eslint}` : value
-            )
-            .forEach(pluginPackageJson);
-    }
 
     // Check other dependencies package.json
     if (dependencies && dependencies.length > 0) {

@@ -1,9 +1,10 @@
 import handlebars from "handlebars";
 import { objAssign } from "../../../../../util/object.js";
 
+const prefixSpinnerText = "[Script load-plugins.js]";
+
 async function exec(fs, project, spinner, pathPlugin) {
-    const { projectName, linters, language, framework, eslint, dependencies } =
-        Object.assign({}, project);
+    const { projectName, framework, dependencies } = Object.assign({}, project);
 
     let contentsFile = {
         "index.js": {
@@ -19,8 +20,6 @@ async function exec(fs, project, spinner, pathPlugin) {
 
     let scriptsPlugin = [];
     let configsPlugin = [];
-
-    const prefixSpinnerText = "[Script load-plugins.js]";
     const pluginsMerge = (pluginName) => {
         try {
             spinner.text = `Reading ${pluginName} copy files and merging it with the project files.`;
@@ -55,19 +54,13 @@ async function exec(fs, project, spinner, pathPlugin) {
             spinner.fail(
                 `${prefixSpinnerText} Error reading ${pluginName} copy files and merging it with the project files.`
             );
+            console.error(error);
         } finally {
             spinner.succeed(
                 `${prefixSpinnerText} Read ${pluginName} copy files and merged it with the project files successfully!`
             );
         }
     };
-
-    // Merge Linters files
-    if (linters && linters.length > 0) {
-        [...linters, ...Array(eslint).map((x) => `eslint-${x}`)].forEach(
-            pluginsMerge
-        );
-    }
 
     // Merge other dependencies files
     if (dependencies && dependencies.length > 0) {
@@ -92,10 +85,14 @@ async function exec(fs, project, spinner, pathPlugin) {
                 async (file) =>
                     await import(file).then((module) => {
                         spinner.text = `Running ${file} script.`;
-                        const result = module.default(fs, {
-                            ...project,
-                            contentsFile,
-                        });
+                        const result = module.default(
+                            fs,
+                            {
+                                ...project,
+                                contentsFile,
+                            },
+                            (pluginName) => pluginsMerge(pluginName)
+                        );
 
                         if (result && result.contentsFile) {
                             objAssign(result.contentsFile, contentsFile);
@@ -126,56 +123,55 @@ async function exec(fs, project, spinner, pathPlugin) {
         )
     );
 
-    // Rename all files with .ejs extension in the project
-    try {
-        spinner.text = `Renaming all files with .ejs extension in the project.`;
-        fs.readdirSync(projectName).forEach((file) => {
-            if (file.includes(".ejs")) {
-                const newFile = file.replace(".ejs", ".js");
-                fs.renameSync(
-                    `${projectName}/${file}`,
-                    `${projectName}/${newFile}`
+    const renameFiles = (dir) => {
+        const files = fs.readdirSync(dir);
+        files.forEach((file) => {
+            const pathFile = `${dir}/${file}`;
+            if (fs.statSync(pathFile).isDirectory()) {
+                renameFiles(pathFile);
+            } else if (file.includes(".ejs")) {
+                spinner.text = `Rename ${pathFile} file.`;
+                fs.renameSync(pathFile, pathFile.replace(".ejs", ".js"));
+                spinner.succeed(
+                    `${prefixSpinnerText} Renamed ${pathFile} file successfully!`
                 );
             }
         });
-    } catch (error) {
-        spinner.fail(
-            `${prefixSpinnerText} Error renaming all files with .ejs extension in the project.`
-        );
-    } finally {
-        spinner.succeed(
-            `${prefixSpinnerText} Renamed all files with .ejs extension in the project successfully!`
-        );
-    }
+    };
+
+    renameFiles(projectName);
 
     // Template files with handlebars
-    Object.keys(contentsFile)
-        .map((fileName) => `${projectName}/${fileName}`)
-        .forEach((fileName) => {
-            // Template variables
-            spinner.text = `Template variables in ${fileName} file.`;
-            const file = fs.readFileSync(fileName, "utf8");
-            if (!file) {
-                return;
-            }
-            const templateIndexJs = handlebars.compile(file);
-            let content = contentsFile[fileName.split("/").pop()];
-            Object.keys(content).forEach((key) => {
-                content[key] = content[key].join("\n");
-            });
+    Object.keys(contentsFile).forEach((fileName) => {
+        const pathFile = `${projectName}/${fileName}`;
+        // Check if file exists
+        if (!fs.existsSync(pathFile)) {
+            return;
+        }
 
-            try {
-                fs.writeFileSync(fileName, templateIndexJs(content));
-            } catch (error) {
-                spinner.fail(
-                    `${prefixSpinnerText} Error templating variables in ${fileName} file.`
-                );
-            } finally {
-                spinner.succeed(
-                    `${prefixSpinnerText} Template variables in ${fileName} file successfully!`
-                );
-            }
+        spinner.text = `Template variables in ${pathFile} file.`;
+
+        const file = fs.readFileSync(pathFile, "utf8");
+        const templateIndexJs = handlebars.compile(file);
+
+        let content = {};
+        Object.keys(contentsFile[fileName]).forEach((key) => {
+            content[key] = contentsFile[fileName][key].join("\n");
         });
+
+        try {
+            fs.writeFileSync(pathFile, templateIndexJs(content));
+        } catch (error) {
+            spinner.fail(
+                `${prefixSpinnerText} Error templating variables in ${fileName} file.`
+            );
+            console.error(error);
+        } finally {
+            spinner.succeed(
+                `${prefixSpinnerText} Template variables in ${fileName} file successfully!`
+            );
+        }
+    });
 }
 
 export default exec;

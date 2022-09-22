@@ -1,7 +1,7 @@
 export default [
     {
         type: "multiselect",
-        name: "linters",
+        name: "dependencies",
         message: {
             "pt-BR": "Selecione as ferramentas de Linting (Opcional)",
             "en-US": "Select the Linting tools (Optional)",
@@ -19,12 +19,16 @@ export default [
                 message: "Prettier",
                 value: "prettier",
             },
+            {
+                message: "EditorConfig",
+                value: "editorconfig",
+            },
         ],
         requiredQuestion: [
             {
                 key: "eslint",
                 type: "select",
-                name: "eslint",
+                name: "dependencies",
                 message: {
                     "pt-BR":
                         "Qual o estilo de código que você deseja utilizar?",
@@ -40,6 +44,23 @@ export default [
                         value: "xo",
                     },
                 ],
+            },
+        ],
+    },
+    {
+        type: "select",
+        name: "dependencies",
+        message: {
+            "pt-BR": "Qual o estilo de CSS que você deseja utilizar?",
+            "en-US": "What CSS style do you want to use?",
+        },
+        result(value) {
+            return Array(value);
+        },
+        choices: [
+            {
+                message: "tailwindcss (postcss)",
+                value: "tailwindcss-postcss",
             },
         ],
     },

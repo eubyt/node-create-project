@@ -1,7 +1,7 @@
 export default [
     {
         type: "multiselect",
-        name: "linters",
+        name: "dependencies",
         message: {
             "pt-BR":
                 "Selecione as ferramentas de Linting ou CodeStyle (Opcional)",
@@ -29,20 +29,23 @@ export default [
             {
                 key: "eslint",
                 type: "select",
-                name: "eslint",
+                name: "dependencies",
                 message: {
                     "pt-BR":
                         "Qual o estilo de código que você deseja utilizar?",
                     "en-US": "What code style do you want to use?",
                 },
+                result(value) {
+                    return Array(value);
+                },
                 choices: [
                     {
                         message: "Standard",
-                        value: "standard",
+                        value: "eslint-standard",
                     },
                     {
                         message: "xo",
-                        value: "xo",
+                        value: "eslint-xo",
                     },
                 ],
             },
