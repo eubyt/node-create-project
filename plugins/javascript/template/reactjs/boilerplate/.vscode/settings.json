@@ -1,0 +1,7 @@
+{
+    "files.autoSave": "afterDelay",
+    "files.autoSaveDelay": 30000,
+    "search.exclude": {
+        "package-lock.json": true
+    }
+}

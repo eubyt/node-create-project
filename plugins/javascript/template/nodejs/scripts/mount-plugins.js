@@ -1,10 +1,12 @@
 import handlebars from "handlebars";
+import shell from "child_process";
 import { objAssign } from "../../../../../util/object.js";
 
 const prefixSpinnerText = "[Script load-plugins.js]";
 
 async function exec(fs, project, spinner, pathPlugin) {
-    const { projectName, framework, dependencies } = Object.assign({}, project);
+    const { projectName, framework, dependencies, packageManager } =
+        Object.assign({}, project);
 
     let contentsFile = {
         "index.js": {
@@ -172,6 +174,25 @@ async function exec(fs, project, spinner, pathPlugin) {
             );
         }
     });
+
+    // Package Manager
+    let command = [`cd ${projectName}`];
+    switch (packageManager) {
+        case "npm":
+            command.push("npm install");
+            break;
+        case "yarn":
+            command.push("yarn install");
+            break;
+        case "pnpm":
+            command.push("pnpm install");
+            break;
+        default:
+            break;
+    }
+
+    spinner.text = `Running ${command} command.`;
+    shell.execSync(command.join(" && "), { stdio: "inherit" });
 }
 
 export default exec;

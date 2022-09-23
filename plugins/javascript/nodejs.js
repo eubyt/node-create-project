@@ -73,6 +73,29 @@ export default [
     {
         key: "nodejs",
         type: "select",
+        name: "packageManager",
+        message: {
+            "pt-BR": "Qual o gerenciador de pacotes você deseja utilizar?",
+            "en-US": "Which package manager do you want to use?",
+        },
+        choices: [
+            {
+                name: "npm",
+                value: "npm",
+            },
+            {
+                name: "yarn",
+                value: "yarn",
+            },
+            {
+                name: "pnpm",
+                value: "pnpm",
+            },
+        ],
+    },
+    {
+        key: "nodejs",
+        type: "select",
         name: "framework",
         message: {
             "pt-BR": "Qual framework deseja utilizar?",
